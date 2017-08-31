@@ -18,12 +18,11 @@ public class Common {
     private Common() {
     }
 
-    public static String createEpochByDate(int year, int month, int dayOfMonth) throws ParseException {
+    public static long createEpochByDate(int year, int month, int dayOfMonth) throws ParseException {
         String str = String.format("%d %d %d", dayOfMonth, month, year);
         SimpleDateFormat df = new SimpleDateFormat("d M y");
         Date date = df.parse(str);
-        long epoch = date.getTime();
-        return String.valueOf(epoch);
+        return date.getTime();
     }
 
     public static Long roundEpochToDay(long epoch) {
