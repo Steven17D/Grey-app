@@ -1,5 +1,8 @@
 package com.stevend.grey;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.text.ParseException;
@@ -44,4 +47,7 @@ public class Common {
     }
 
 
+    public static void fastToast(Context context, String s) {
+        Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
+    }
 }
