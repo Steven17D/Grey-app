@@ -2,7 +2,6 @@ package com.stevend.grey.fragments;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -10,11 +9,9 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
@@ -25,13 +22,20 @@ import com.stevend.grey.Common;
 import com.stevend.grey.FeedingEntry;
 import com.stevend.grey.R;
 
-import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
+import io.github.memfis19.cadar.event.OnDayChangeListener;
+import io.github.memfis19.cadar.event.OnMonthChangeListener;
+import io.github.memfis19.cadar.settings.MonthCalendarConfiguration;
+import io.github.memfis19.cadar.view.MonthCalendar;
 
 /**
  * Created by Steven on 6/23/2017.
  */
 
-public class CalendarFragment extends Fragment implements CalendarView.OnDateChangeListener {
+public class CalendarFragment extends Fragment implements OnDayChangeListener, OnMonthChangeListener {
     private static final CalendarFragment ourInstance = new CalendarFragment();
 
     public static CalendarFragment getInstance() {
@@ -40,17 +44,29 @@ public class CalendarFragment extends Fragment implements CalendarView.OnDateCha
     public CalendarFragment() {}
 
     private View view;
+    private TextView monthName;
+    private MonthCalendar calendarView;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_calender, container, false);
 
-        CalendarView calendarView = (CalendarView) view.findViewById(R.id.calendar);
-        calendarView.setOnDateChangeListener(this);
+        MonthCalendarConfiguration.Builder builder = new MonthCalendarConfiguration.Builder();
+        builder.setFirstDayOfWeek(Calendar.SUNDAY);
+        builder.setDisplayDaysOutOfMonth(false);
 
-        setFirebaseConnection(Common.roundEpochToDay(((CalendarView) view.findViewById(R.id.calendar)).getDate()));
+        calendarView = (MonthCalendar) view.findViewById(R.id.calendar);
+        calendarView.setOnDayChangeListener(this);
+        calendarView.setOnMonthChangeListener(this);
+        calendarView.prepareCalendar(builder.build());
 
+        setFirebaseConnection(Common.roundEpochToDay(System.currentTimeMillis()));
+        monthName = (TextView) view.findViewById(R.id.month_name);
+        Date date = Calendar.getInstance().getTime();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        monthName.setText(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.UK));
         return view;
     }
 
@@ -82,17 +98,21 @@ public class CalendarFragment extends Fragment implements CalendarView.OnDateCha
     }
 
     @Override
-    public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        try {
-            Toast.
-                    makeText(getContext(),
-                    String.valueOf(Common.createEpochByDate(year, month + 1, dayOfMonth)),
-                    Toast.LENGTH_SHORT)
-                    .show();
+    public void onDayChanged(Calendar calendar) {
+        setFirebaseConnection(Common.roundEpochToDay(calendar.getTimeInMillis()));
+    }
 
-            setFirebaseConnection(Common.createEpochByDate(year, month + 1, dayOfMonth));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onMonthChanged(Calendar calendar) {
+        java.util.Date date = calendar.getTime();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        monthName.setText(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.UK));
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        calendarView.releaseCalendar();
     }
 }
