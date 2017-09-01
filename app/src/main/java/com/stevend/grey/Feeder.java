@@ -1,5 +1,7 @@
 package com.stevend.grey;
 
+import com.google.firebase.auth.FirebaseUser;
+
 public class Feeder {
     private String name;
     private String email;
@@ -35,5 +37,11 @@ public class Feeder {
         this.name = name;
         this.email = email;
         this.photoUrl = photoUrl;
+    }
+
+    public Feeder(FirebaseUser firebaseUser) {
+        this.name = firebaseUser.getDisplayName();
+        this.email = firebaseUser.getEmail();
+        this.photoUrl = String.valueOf(firebaseUser.getPhotoUrl());
     }
 }

@@ -1,5 +1,7 @@
 package com.stevend.grey;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,6 +20,16 @@ public class Common {
     private Common() {
     }
 
+    public GoogleApiClient getmGoogleApiClient() {
+        return mGoogleApiClient;
+    }
+
+    public void setmGoogleApiClient(GoogleApiClient mGoogleApiClient) {
+        this.mGoogleApiClient = mGoogleApiClient;
+    }
+
+    private GoogleApiClient mGoogleApiClient;
+
     public static long createEpochByDate(int year, int month, int dayOfMonth) throws ParseException {
         String str = String.format("%d %d %d", dayOfMonth, month, year);
         SimpleDateFormat df = new SimpleDateFormat("d M y");
@@ -30,4 +42,6 @@ public class Common {
         newEpoch -= newEpoch % 86400;
         return newEpoch * 1000;
     }
+
+
 }

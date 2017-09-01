@@ -1,6 +1,9 @@
 package com.stevend.grey;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,13 +11,20 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.firebase.auth.FirebaseAuth;
 import com.stevend.grey.fragments.CalendarFragment;
-import com.stevend.grey.fragments.MainFragment;
+import com.stevend.grey.fragments.EntryFragment;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivityLog";
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -68,10 +78,48 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+//            signOut();
+            return true;
+        } else if (id == R.id.action_signout){
+            signOut();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void signOut() {
+        // Firebase sign out
+        FirebaseAuth.getInstance().signOut();
+
+        // Google sign out
+        final GoogleApiClient mGoogleApiClient = Common.getInstance().getmGoogleApiClient();
+        mGoogleApiClient.connect();
+        mGoogleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+            @Override
+            public void onConnected(@Nullable Bundle bundle) {
+
+                FirebaseAuth.getInstance().signOut();
+                if(mGoogleApiClient.isConnected()) {
+                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(@NonNull Status status) {
+                            if (status.isSuccess()) {
+                                Log.d(TAG, "User Logged out");
+                                Intent intent = new Intent(MainActivity.this, SignInActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onConnectionSuspended(int i) {
+                Log.d(TAG, "Google API Client Connection Suspended");
+            }
+        });
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -88,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return CalendarFragment.getInstance();
                 case 1:
-                    return MainFragment.getInstance();
+                    return EntryFragment.getInstance();
 
             }
             return null;
