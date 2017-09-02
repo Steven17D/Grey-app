@@ -45,7 +45,7 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
 
     private View view;
     private TextView monthName;
-    private MonthCalendar calendarView;
+    private MonthCalendar monthCalendar;
 
     @Nullable
     @Override
@@ -56,10 +56,10 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
         builder.setFirstDayOfWeek(Calendar.SUNDAY);
         builder.setDisplayDaysOutOfMonth(false);
 
-        calendarView = (MonthCalendar) view.findViewById(R.id.calendar);
-        calendarView.setOnDayChangeListener(this);
-        calendarView.setOnMonthChangeListener(this);
-        calendarView.prepareCalendar(builder.build());
+        monthCalendar = (MonthCalendar) view.findViewById(R.id.calendar);
+        monthCalendar.setOnDayChangeListener(this);
+        monthCalendar.setOnMonthChangeListener(this);
+        monthCalendar.prepareCalendar(builder.build());
 
         setFirebaseConnection(Common.roundEpochToDay(System.currentTimeMillis()));
         monthName = (TextView) view.findViewById(R.id.month_name);
@@ -113,6 +113,6 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
     @Override
     public void onDestroy() {
         super.onDestroy();
-        calendarView.releaseCalendar();
+        monthCalendar.releaseCalendar();
     }
 }
