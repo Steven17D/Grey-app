@@ -170,6 +170,7 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
             Toast.makeText(this, user.getDisplayName(), Toast.LENGTH_SHORT).show();
             Intent mainActivityIntent = new Intent(SignInActivity.this, MainActivity.class);
             startActivity(mainActivityIntent);
+            finish();
         }
     }
 
