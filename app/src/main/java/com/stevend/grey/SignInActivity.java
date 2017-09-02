@@ -170,6 +170,7 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
             Toast.makeText(this, user.getDisplayName(), Toast.LENGTH_SHORT).show();
             Intent mainActivityIntent = new Intent(SignInActivity.this, MainActivity.class);
             startActivity(mainActivityIntent);
+            finish();
         }
     }
 
@@ -177,7 +178,6 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-//        Log.d(TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
