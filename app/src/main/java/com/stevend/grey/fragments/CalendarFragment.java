@@ -9,6 +9,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
     private View view;
     private TextView monthName;
     private MonthCalendar monthCalendar;
+    private Calendar currentDay;
 
     @Nullable
     @Override
@@ -62,10 +64,33 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
         monthCalendar.setOnMonthChangeListener(this);
         monthCalendar.prepareCalendar(builder.build());
 
+        ImageButton leftButton = (ImageButton) view.findViewById(R.id.left_button);
+        leftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeMonth(true);
+            }
+        });
+        ImageButton rightButton = (ImageButton) view.findViewById(R.id.right_button);
+        rightButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeMonth(false);
+            }
+        });
+
+        currentDay = Calendar.getInstance();
         setFirebaseConnection(Common.roundEpochToDay(System.currentTimeMillis()));
         updateMonthTitle(Calendar.getInstance().getTime());
 
         return view;
+    }
+
+    private void changeMonth(boolean isLeft) {
+        currentDay.add(Calendar.MONTH, isLeft? -1 : 1);
+        updateMonthTitle(currentDay.getTime());
+        setFirebaseConnection(Common.roundEpochToDay(currentDay.getTimeInMillis()));
+        monthCalendar.setSelectedDay(currentDay, true);
     }
 
     private void setFirebaseConnection(long selectedData) {
@@ -98,6 +123,7 @@ public class CalendarFragment extends Fragment implements OnDayChangeListener, O
     @Override
     public void onDayChanged(Calendar calendar) {
         setFirebaseConnection(Common.roundEpochToDay(calendar.getTimeInMillis()));
+        currentDay = calendar;
     }
 
     @Override

@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:gravity="center">
         <ImageButton
+            android:id="@+id/left_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -30,6 +31,7 @@
             tools:text="@string/plain_text_for_preview"
             tools:ignore="RelativeOverlap"/>
         <ImageButton
+            android:id="@+id/right_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
