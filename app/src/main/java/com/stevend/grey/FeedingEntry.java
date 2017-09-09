@@ -40,7 +40,5 @@ public class FeedingEntry {
     public void setAmount(int amount) {
         this.amount = amount;
     }
-
-
 }
 

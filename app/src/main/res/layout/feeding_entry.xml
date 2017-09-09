@@ -31,4 +31,5 @@
         android:paddingBottom="20dp"
         tools:text="@string/plain_text_for_preview"
         android:textSize="14sp"/>
+    <!--TODO add amount indicator-->
 </RelativeLayout>

@@ -7,4 +7,7 @@
     <string name="loading">Loading</string>
     <string name="action_signout">Sign out</string>
     <string name="add_entry">Add entry</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

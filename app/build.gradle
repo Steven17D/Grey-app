@@ -34,7 +34,12 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-auth:2.0.1'
     compile 'com.firebaseui:firebase-ui:2.0.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
     compile 'io.github.memfis19:cadar:0.4.8'
+    compile 'com.github.clans:fab:1.6.2'
+    compile 'com.afollestad.material-dialogs:core:0.9.4.5'
+    compile 'com.github.john990:WaveView:v0.9'
+    compile 'org.adw.library:discrete-seekbar:1.0.1'
     testCompile 'junit:junit:4.12'
 }
 
