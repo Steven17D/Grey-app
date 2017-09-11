@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_chevron_left_white_24dp"
+                android:src="@drawable/ic_chevron_left_gray_24dp"
                 android:background="@android:color/transparent"
                 tools:ignore="ContentDescription,RtlHardcoded"/>
             <TextView
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_chevron_right_white_24dp"
+                android:src="@drawable/ic_chevron_right_gray_24dp"
                 android:background="@android:color/transparent"
                 tools:ignore="ContentDescription,RtlHardcoded"/>
         </RelativeLayout>
