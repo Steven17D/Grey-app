@@ -10,11 +10,15 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -29,11 +33,10 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.john.waveview.WaveView;
 
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
@@ -55,11 +58,13 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private Calendar currentDay;
     private ListView entryList;
     private FloatingActionMenu materialDesignFAM;
+    private FirebaseListAdapter<FeedingEntry> feedingEntryFirebaseListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         entryList = (ListView)findViewById(R.id.entry_list);
 
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 if (currentUser == null) return;
                 MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
                         .title("Add entry")
-                        .customView(R.layout.add_entry_dialog, true)
+                        .customView(R.layout.add_entry_dialog, false)
                         .cancelable(true)
                         .canceledOnTouchOutside(true)
                         .negativeText("Cancel")
@@ -146,12 +151,12 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
         entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 final FeedingEntry feedingEntry = (FeedingEntry) parent.getItemAtPosition(position);
 
                 MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
-                        .title("Entry options")
-//                       TODO .customView()
+                        .title(R.string.edit_entry_title)
+                        .customView(R.layout.edit_entry_dialog, false)
                         .cancelable(true)
                         .canceledOnTouchOutside(true)
                         .negativeText(R.string.cancel)
@@ -160,21 +165,12 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                         .onNeutral(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                FirebaseDatabase.getInstance().getReference()
-                                        .child("Cats").child("Grey").child("feedings").orderByChild("time").equalTo(feedingEntry.getTime())
-                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                for (DataSnapshot appleSnapshot: dataSnapshot.getChildren()) {
-                                                    appleSnapshot.getRef().removeValue();
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-                                                Log.e(TAG, "onCancelled", databaseError.toException());
-                                            }
-                                        });
+                                feedingEntryFirebaseListAdapter.getRef(position).getRef().removeValue(new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        Toast.makeText(MainActivity.this, R.string.successful_deletion_message, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
                         })
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
@@ -184,6 +180,56 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                             }
                         })
                         .show();
+
+                final View dialogView = dialog.getCustomView();
+                if (dialogView == null) return false;
+
+                EditText feederNameEditText = (EditText) dialogView.findViewById(R.id.feeder_name_editText);
+                feederNameEditText.setText(feedingEntry.getFeeder().getName());
+                feederNameEditText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this, R.string.disabled_feeder_edit, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                dialogView.findViewById(R.id.change_data_imageButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new MaterialDialog.Builder(MainActivity.this)
+                                .title(R.string.date_picker_title)
+                                .customView(R.layout.data_picker_dialog, false)
+                                .cancelable(true)
+                                .canceledOnTouchOutside(true)
+                                .negativeText(R.string.cancel)
+                                .positiveText(R.string.ok)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        // TODO refactor
+                                        ((DatePicker) dialog.getCustomView().findViewById(R.id.date_picker)).getDayOfMonth();
+                                        new MaterialDialog.Builder(MainActivity.this)
+                                                .title(R.string.time_picker_title)
+                                                .customView(R.layout.time_picker_dialog, false)
+                                                .cancelable(true)
+                                                .canceledOnTouchOutside(true)
+                                                .negativeText(R.string.cancel)
+                                                .positiveText(R.string.ok)
+                                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                                    @Override
+                                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                                        // TODO save changes
+                                                    }
+                                                })
+                                                .show();
+                                    }
+                                })
+                                .show();
+                    }
+                });
+
+                EditText amountEditText = (EditText) dialogView.findViewById(R.id.amount_editText);
+                amountEditText.setText(String.format("%s %c", feedingEntry.getAmount(), '%'));
 
                 return false;
             }
@@ -234,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private void setFirebaseConnection(long selectedData) {
         final long epochDay = 24 * 60 * 60 * 1000;
         Query feedingsQuery = FirebaseDatabase.getInstance().getReference("Cats").child("Grey").child("feedings").orderByChild("time").startAt(selectedData).endAt(selectedData + epochDay);
-        FirebaseListAdapter<FeedingEntry> feedingEntryFirebaseListAdapter =
+        feedingEntryFirebaseListAdapter =
                 new FirebaseListAdapter<FeedingEntry>(this, FeedingEntry.class, R.layout.feeding_entry, feedingsQuery) {
                     @Override
                     protected void populateView(View v, FeedingEntry model, int position) {

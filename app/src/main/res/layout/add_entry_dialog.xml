@@ -4,13 +4,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <com.john.waveview.WaveView
         android:id="@+id/wave_view"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
         app:progress="75"
+        app:above_wave_color="@color/material_light_secondary_text_color"
         app:wave_height="large"
         app:wave_hz="fast"
         app:wave_length="large"/>
@@ -22,5 +24,9 @@
         app:dsb_min="0"
         app:dsb_max="100"
         app:dsb_value="75"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignBottom="@id/wave_view"
+        app:dsb_indicatorPopupEnabled="true"
+        app:dsb_allowTrackClickToDrag="true"
+        app:dsb_indicatorColor="@color/colorPrimary"
+        app:dsb_progressColor="@color/colorPrimary"/>
 </RelativeLayout>
