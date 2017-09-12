@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_marginBottom="@dimen/activity_horizontal_margin">
+            android:layout_marginBottom="@dimen/margin_padding_size_small">
             <ImageButton
                 android:id="@+id/left_button"
                 android:layout_width="wrap_content"
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/text_size_large"
                 android:layout_centerInParent="true"
-                tools:text="@string/plain_text_for_preview"
+                tools:text="@string/month_for_preview"
                 tools:ignore="RelativeOverlap"/>
             <ImageButton
                 android:id="@+id/right_button"

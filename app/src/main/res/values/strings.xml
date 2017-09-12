@@ -22,4 +22,7 @@
     <string name="ok">OK</string>
     <string name="successful_deletion_message">Entry was deleted successfully</string>
     <string name="time_picker_title">Pick a time</string>
+    <string name="date_multiline_for_preview">Monday, 11 September\\n19:14</string>
+    <string name="date_editing_button">date editing button</string>
+    <string name="month_for_preview">September</string>
 </resources>

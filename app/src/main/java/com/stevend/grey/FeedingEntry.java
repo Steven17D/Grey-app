@@ -4,7 +4,7 @@ package com.stevend.grey;
  * Created by Steven on 6/23/2017.
  */
 
-public class FeedingEntry {
+public class FeedingEntry implements Cloneable{
     private Feeder feeder;
     private long time;
     private int amount;
@@ -39,6 +39,11 @@ public class FeedingEntry {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }
 

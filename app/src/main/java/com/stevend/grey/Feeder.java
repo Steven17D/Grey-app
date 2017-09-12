@@ -2,7 +2,7 @@ package com.stevend.grey;
 
 import com.google.firebase.auth.FirebaseUser;
 
-public class Feeder {
+public class Feeder implements Cloneable{
     private String name;
     private String email;
     private String photoUrl;
@@ -43,5 +43,10 @@ public class Feeder {
         this.name = firebaseUser.getDisplayName();
         this.email = firebaseUser.getEmail();
         this.photoUrl = String.valueOf(firebaseUser.getPhotoUrl());
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

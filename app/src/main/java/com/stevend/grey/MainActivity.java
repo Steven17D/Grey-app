@@ -10,7 +10,6 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -18,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -33,7 +33,6 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
@@ -64,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         entryList = (ListView)findViewById(R.id.entry_list);
 
@@ -152,7 +150,15 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                final FeedingEntry feedingEntry = (FeedingEntry) parent.getItemAtPosition(position);
+                final FeedingEntry feedingEntry;
+                try {
+                    feedingEntry = (FeedingEntry) ((FeedingEntry) parent.getItemAtPosition(position)).clone();
+                } catch (CloneNotSupportedException e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                final DatabaseReference feedingEntryRef = feedingEntryFirebaseListAdapter.getRef(position).getRef();
 
                 MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
                         .title(R.string.edit_entry_title)
@@ -165,18 +171,13 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                         .onNeutral(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                feedingEntryFirebaseListAdapter.getRef(position).getRef().removeValue(new DatabaseReference.CompletionListener() {
-                                    @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                        Toast.makeText(MainActivity.this, R.string.successful_deletion_message, Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                feedingEntryRef.removeValue();
                             }
                         })
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                // TODO save changes
+                                feedingEntryRef.setValue(feedingEntry);
                             }
                         })
                         .show();
@@ -184,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 final View dialogView = dialog.getCustomView();
                 if (dialogView == null) return false;
 
-                EditText feederNameEditText = (EditText) dialogView.findViewById(R.id.feeder_name_editText);
+                TextView feederNameEditText = (TextView) dialogView.findViewById(R.id.feeder_name_text_view);
                 feederNameEditText.setText(feedingEntry.getFeeder().getName());
                 feederNameEditText.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -193,12 +194,24 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                     }
                 });
 
-                dialogView.findViewById(R.id.change_data_imageButton).setOnClickListener(new View.OnClickListener() {
+
+
+                final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
+                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
+                dateTextView.setText(dateString);
+
+                ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
+
+                MaterialDialog.SingleButtonCallback dateChangeDialogOnPositiveButtonCallback = new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        View datePickerView = dialog.getCustomView();
+                        if (datePickerView == null) return;
+                        final DatePicker datePicker = (DatePicker) datePickerView.findViewById(R.id.date_picker);
+                        final Calendar calendar = Calendar.getInstance();
                         new MaterialDialog.Builder(MainActivity.this)
-                                .title(R.string.date_picker_title)
-                                .customView(R.layout.data_picker_dialog, false)
+                                .title(R.string.time_picker_title)
+                                .customView(R.layout.time_picker_dialog, false)
                                 .cancelable(true)
                                 .canceledOnTouchOutside(true)
                                 .negativeText(R.string.cancel)
@@ -206,27 +219,39 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                                     @Override
                                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        // TODO refactor
-                                        ((DatePicker) dialog.getCustomView().findViewById(R.id.date_picker)).getDayOfMonth();
-                                        new MaterialDialog.Builder(MainActivity.this)
-                                                .title(R.string.time_picker_title)
-                                                .customView(R.layout.time_picker_dialog, false)
-                                                .cancelable(true)
-                                                .canceledOnTouchOutside(true)
-                                                .negativeText(R.string.cancel)
-                                                .positiveText(R.string.ok)
-                                                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                                    @Override
-                                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                                        // TODO save changes
-                                                    }
-                                                })
-                                                .show();
+                                        View datePickerView = dialog.getCustomView();
+                                        if (datePickerView == null) return;
+                                        final TimePicker timePicker = (TimePicker) datePickerView.findViewById(R.id.time_picker);
+                                        calendar.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(),
+                                                timePicker.getHour(), timePicker.getMinute());
+                                        feedingEntry.setTime(calendar.getTimeInMillis());
+                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
+                                        dateTextView.setText(dateString);
                                     }
                                 })
                                 .show();
                     }
-                });
+                };
+
+                final MaterialDialog.Builder dateChangeMaterialDialogBuilder = new MaterialDialog.Builder(MainActivity.this)
+                        .title(R.string.date_picker_title)
+                        .customView(R.layout.data_picker_dialog, false)
+                        .cancelable(true)
+                        .canceledOnTouchOutside(true)
+                        .negativeText(R.string.cancel)
+                        .positiveText(R.string.ok)
+                        .onPositive(dateChangeDialogOnPositiveButtonCallback);
+
+                View.OnClickListener dateChangeOnClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dateChangeMaterialDialogBuilder.show();
+                    }
+                };
+
+                dateTextView.setOnClickListener(dateChangeOnClickListener);
+                dateImageButton.setOnClickListener(dateChangeOnClickListener);
+
 
                 EditText amountEditText = (EditText) dialogView.findViewById(R.id.amount_editText);
                 amountEditText.setText(String.format("%s %c", feedingEntry.getAmount(), '%'));
