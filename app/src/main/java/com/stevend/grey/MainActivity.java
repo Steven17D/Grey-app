@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                         public int transform(int value) {
                             WaveView waveView = (WaveView) dialogView.findViewById(R.id.wave_view);
                             waveView.setProgress(value);
+                            TextView progressTextView = (TextView) dialogView.findViewById(R.id.amount_text_view);
+                            progressTextView.setText(String.valueOf(value));
                             return value;
                         }
                     });
