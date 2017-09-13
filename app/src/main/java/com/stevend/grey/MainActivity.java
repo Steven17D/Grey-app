@@ -1,5 +1,7 @@
 package com.stevend.grey;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -196,58 +198,31 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                     }
                 });
 
-
-
                 final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
                 String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
                 dateTextView.setText(dateString);
 
                 ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
 
-                MaterialDialog.SingleButtonCallback dateChangeDialogOnPositiveButtonCallback = new MaterialDialog.SingleButtonCallback() {
+                View.OnClickListener dateChangeOnClickListener = new View.OnClickListener() {
                     @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        View datePickerView = dialog.getCustomView();
-                        if (datePickerView == null) return;
-                        final DatePicker datePicker = (DatePicker) datePickerView.findViewById(R.id.date_picker);
+                    public void onClick(View v) {
                         final Calendar calendar = Calendar.getInstance();
-                        new MaterialDialog.Builder(MainActivity.this)
-                                .title(R.string.time_picker_title)
-                                .customView(R.layout.time_picker_dialog, false)
-                                .cancelable(true)
-                                .canceledOnTouchOutside(true)
-                                .negativeText(R.string.cancel)
-                                .positiveText(R.string.ok)
-                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        calendar.setTimeInMillis(feedingEntry.getTime());
+                        new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, final int year, final int month, final int dayOfMonth) {
+                                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
                                     @Override
-                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        View datePickerView = dialog.getCustomView();
-                                        if (datePickerView == null) return;
-                                        final TimePicker timePicker = (TimePicker) datePickerView.findViewById(R.id.time_picker);
-                                        calendar.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth(),
-                                                timePicker.getHour(), timePicker.getMinute());
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        calendar.set(year, month, dayOfMonth, hourOfDay, minute);
                                         feedingEntry.setTime(calendar.getTimeInMillis());
                                         String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
                                         dateTextView.setText(dateString);
                                     }
-                                })
-                                .show();
-                    }
-                };
-
-                final MaterialDialog.Builder dateChangeMaterialDialogBuilder = new MaterialDialog.Builder(MainActivity.this)
-                        .title(R.string.date_picker_title)
-                        .customView(R.layout.data_picker_dialog, false)
-                        .cancelable(true)
-                        .canceledOnTouchOutside(true)
-                        .negativeText(R.string.cancel)
-                        .positiveText(R.string.ok)
-                        .onPositive(dateChangeDialogOnPositiveButtonCallback);
-
-                View.OnClickListener dateChangeOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dateChangeMaterialDialogBuilder.show();
+                                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+                            }
+                        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
                     }
                 };
 
