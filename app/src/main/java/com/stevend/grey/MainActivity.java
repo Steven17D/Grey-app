@@ -67,21 +67,21 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         setContentView(R.layout.activity_main);
 
         initCalendar();
-        initFloatingActionMenu();
         initEntryListView();
+        initFloatingActionMenu();
     }
 
     private void initCalendar() {
         class CalendarControllerOnClickListener implements View.OnClickListener {
-            private final boolean zzac;
+            private final boolean isLeft;
 
-            private CalendarControllerOnClickListener(boolean zzac) {
-                this.zzac = zzac;
+            private CalendarControllerOnClickListener(boolean isLeft) {
+                this.isLeft = isLeft;
             }
 
             @Override
             public void onClick(View v) {
-                changeMonth(zzac);
+                changeMonth(isLeft);
             }
         }
 
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 });
 
                 final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
-                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new Date(feedingEntry.getTime()));
+                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
                 dateTextView.setText(dateString);
 
                 ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                                         calendar.set(year, month, dayOfMonth, hourOfDay, minute);
                                         feedingEntry.setTime(calendar.getTimeInMillis());
-                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new Date(feedingEntry.getTime()));
+                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
                                         dateTextView.setText(dateString);
                                     }
                                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                     }
                                 });
                         ((TextView)v.findViewById(R.id.feeder_name)).setText(model.getFeeder().getName());
-                        ((TextView)v.findViewById(R.id.time)).setText(new java.text.SimpleDateFormat("EEEE, d MMMM HH:mm").format(new java.util.Date(model.getTime())));
+                        ((TextView)v.findViewById(R.id.time)).setText(new java.text.SimpleDateFormat("EEEE, d MMMM HH:mm", Locale.getDefault()).format(new java.util.Date(model.getTime())));
                     }
                 };
         entryList.setAdapter(feedingEntryFirebaseListAdapter);
