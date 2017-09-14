@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
     private TextView monthName;
     private MonthCalendar monthCalendar;
-    private Calendar currentDay;
+    private Calendar currentDay = Calendar.getInstance();
     private ListView entryList;
     private FloatingActionMenu materialDesignFAM;
     private FirebaseListAdapter<FeedingEntry> feedingEntryFirebaseListAdapter;
@@ -66,7 +66,24 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        entryList = (ListView)findViewById(R.id.entry_list);
+        initCalendar();
+        initFloatingActionMenu();
+        initEntryListView();
+    }
+
+    private void initCalendar() {
+        class CalendarControllerOnClickListener implements View.OnClickListener {
+            private final boolean zzac;
+
+            private CalendarControllerOnClickListener(boolean zzac) {
+                this.zzac = zzac;
+            }
+
+            @Override
+            public void onClick(View v) {
+                changeMonth(zzac);
+            }
+        }
 
         MonthCalendarConfiguration.Builder builder = new MonthCalendarConfiguration.Builder();
         builder.setFirstDayOfWeek(Calendar.SUNDAY);
@@ -79,24 +96,104 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         monthCalendar.prepareCalendar(builder.build());
 
         ImageButton leftButton = (ImageButton) findViewById(R.id.left_button);
-        leftButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                changeMonth(true);
-            }
-        });
+        leftButton.setOnClickListener(new CalendarControllerOnClickListener(true));
         ImageButton rightButton = (ImageButton) findViewById(R.id.right_button);
-        rightButton.setOnClickListener(new View.OnClickListener() {
+        rightButton.setOnClickListener(new CalendarControllerOnClickListener(false));
+
+    }
+
+    private void initEntryListView() {
+        entryList = (ListView) findViewById(R.id.entry_list);
+        updateEntryViewAdapter(Common.roundEpochToDay(System.currentTimeMillis()));
+        updateMonthTitle(Calendar.getInstance().getTime());
+        entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onClick(View v) {
-                changeMonth(false);
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                final FeedingEntry feedingEntry;
+                try {
+                    feedingEntry = (FeedingEntry) ((FeedingEntry) parent.getItemAtPosition(position)).clone();
+                } catch (CloneNotSupportedException e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                final DatabaseReference feedingEntryRef = feedingEntryFirebaseListAdapter.getRef(position).getRef();
+
+                MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
+                        .title(R.string.edit_entry_title)
+                        .customView(R.layout.edit_entry_dialog, false)
+                        .cancelable(true)
+                        .canceledOnTouchOutside(true)
+                        .negativeText(R.string.cancel)
+                        .positiveText(R.string.save)
+                        .neutralText(R.string.delete)
+                        .onNeutral(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                feedingEntryRef.removeValue();
+                            }
+                        })
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                feedingEntryRef.setValue(feedingEntry);
+                            }
+                        })
+                        .show();
+
+                final View dialogView = dialog.getCustomView();
+                if (dialogView == null) return false;
+
+                TextView feederNameEditText = (TextView) dialogView.findViewById(R.id.feeder_name_text_view);
+                feederNameEditText.setText(feedingEntry.getFeeder().getName());
+                feederNameEditText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(MainActivity.this, R.string.disabled_feeder_edit, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
+                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new Date(feedingEntry.getTime()));
+                dateTextView.setText(dateString);
+
+                ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
+
+                View.OnClickListener dateChangeOnClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(feedingEntry.getTime());
+                        new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, final int year, final int month, final int dayOfMonth) {
+                                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                        calendar.set(year, month, dayOfMonth, hourOfDay, minute);
+                                        feedingEntry.setTime(calendar.getTimeInMillis());
+                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new Date(feedingEntry.getTime()));
+                                        dateTextView.setText(dateString);
+                                    }
+                                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+                            }
+                        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+                    }
+                };
+
+                dateTextView.setOnClickListener(dateChangeOnClickListener);
+                dateImageButton.setOnClickListener(dateChangeOnClickListener);
+
+
+                EditText amountEditText = (EditText) dialogView.findViewById(R.id.amount_editText);
+                amountEditText.setText(String.format("%s %c", feedingEntry.getAmount(), '%'));
+
+                return false;
             }
         });
+    }
 
-        currentDay = Calendar.getInstance();
-        setFirebaseConnection(Common.roundEpochToDay(System.currentTimeMillis()));
-        updateMonthTitle(Calendar.getInstance().getTime());
-
+    private void initFloatingActionMenu() {
         materialDesignFAM = (FloatingActionMenu) findViewById(R.id.material_design_android_floating_action_menu);
         FloatingActionButton entryButton = (FloatingActionButton) findViewById(R.id.action_menu_add_entry);
         entryButton.setOnClickListener(new View.OnClickListener() {
@@ -150,92 +247,6 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 materialDesignFAM.close(true);
             }
         });
-
-        entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                final FeedingEntry feedingEntry;
-                try {
-                    feedingEntry = (FeedingEntry) ((FeedingEntry) parent.getItemAtPosition(position)).clone();
-                } catch (CloneNotSupportedException e) {
-                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                    return false;
-                }
-
-                final DatabaseReference feedingEntryRef = feedingEntryFirebaseListAdapter.getRef(position).getRef();
-
-                MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
-                        .title(R.string.edit_entry_title)
-                        .customView(R.layout.edit_entry_dialog, false)
-                        .cancelable(true)
-                        .canceledOnTouchOutside(true)
-                        .negativeText(R.string.cancel)
-                        .positiveText(R.string.save)
-                        .neutralText(R.string.delete)
-                        .onNeutral(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                feedingEntryRef.removeValue();
-                            }
-                        })
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                feedingEntryRef.setValue(feedingEntry);
-                            }
-                        })
-                        .show();
-
-                final View dialogView = dialog.getCustomView();
-                if (dialogView == null) return false;
-
-                TextView feederNameEditText = (TextView) dialogView.findViewById(R.id.feeder_name_text_view);
-                feederNameEditText.setText(feedingEntry.getFeeder().getName());
-                feederNameEditText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, R.string.disabled_feeder_edit, Toast.LENGTH_LONG).show();
-                    }
-                });
-
-                final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
-                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
-                dateTextView.setText(dateString);
-
-                ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
-
-                View.OnClickListener dateChangeOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final Calendar calendar = Calendar.getInstance();
-                        calendar.setTimeInMillis(feedingEntry.getTime());
-                        new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker view, final int year, final int month, final int dayOfMonth) {
-                                new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                                    @Override
-                                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                        calendar.set(year, month, dayOfMonth, hourOfDay, minute);
-                                        feedingEntry.setTime(calendar.getTimeInMillis());
-                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm").format(new java.util.Date(feedingEntry.getTime()));
-                                        dateTextView.setText(dateString);
-                                    }
-                                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
-                            }
-                        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-                    }
-                };
-
-                dateTextView.setOnClickListener(dateChangeOnClickListener);
-                dateImageButton.setOnClickListener(dateChangeOnClickListener);
-
-
-                EditText amountEditText = (EditText) dialogView.findViewById(R.id.amount_editText);
-                amountEditText.setText(String.format("%s %c", feedingEntry.getAmount(), '%'));
-
-                return false;
-            }
-        });
     }
 
     private void signOut() {
@@ -275,11 +286,11 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private void changeMonth(boolean isLeft) {
         currentDay.add(Calendar.MONTH, isLeft? -1 : 1);
         updateMonthTitle(currentDay.getTime());
-        setFirebaseConnection(Common.roundEpochToDay(currentDay.getTimeInMillis()));
+        updateEntryViewAdapter(Common.roundEpochToDay(currentDay.getTimeInMillis()));
         monthCalendar.setSelectedDay(currentDay, true);
     }
 
-    private void setFirebaseConnection(long selectedData) {
+    private void updateEntryViewAdapter(long selectedData) {
         final long epochDay = 24 * 60 * 60 * 1000;
         Query feedingsQuery = FirebaseDatabase.getInstance().getReference("Cats").child("Grey").child("feedings").orderByChild("time").startAt(selectedData).endAt(selectedData + epochDay);
         feedingEntryFirebaseListAdapter =
@@ -308,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
     @Override
     public void onDayChanged(Calendar calendar) {
-        setFirebaseConnection(Common.roundEpochToDay(calendar.getTimeInMillis()));
+        updateEntryViewAdapter(Common.roundEpochToDay(calendar.getTimeInMillis()));
         currentDay = calendar;
     }
 
