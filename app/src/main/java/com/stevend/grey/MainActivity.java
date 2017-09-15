@@ -40,6 +40,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.john.waveview.WaveView;
+import com.roger.catloadinglibrary.CatLoadingView;
 
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
 
@@ -61,12 +62,15 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private ListView entryList;
     private FloatingActionMenu materialDesignFAM;
     private FirebaseListAdapter<FeedingEntry> feedingEntryFirebaseListAdapter;
+    private CatLoadingView catLoadingView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        catLoadingView = new CatLoadingView();
+        catLoadingView.show(getSupportFragmentManager(), "");
         initCalendar();
         initEntryListView();
         initFloatingActionMenu();
@@ -311,6 +315,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                     @Override
                     protected void populateView(View v, final FeedingEntry model, int position) {
                         final ImageView feederImage = (ImageView) v.findViewById(R.id.feeder_image);
+                        catLoadingView.dismiss();
                         Glide.with(MainActivity.this)
                                 .load(model.getFeeder().getPhotoUrl())
                                 .asBitmap()
