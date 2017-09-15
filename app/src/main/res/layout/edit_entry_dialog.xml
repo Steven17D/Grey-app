@@ -27,8 +27,8 @@
         android:clickable="true"
         android:textColor="@color/material_light_secondary_text_color"
         android:padding="@dimen/margin_padding_size_small"
-        android:layout_toEndOf="@+id/feeder_name_title"
-        android:layout_alignParentTop="true"/>
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/amount_title" />
 
     <TextView
         android:id="@+id/time_title"
@@ -49,8 +49,8 @@
         android:textColor="#000"
         android:maxLines="3"
         android:padding="@dimen/margin_padding_size_small"
-        android:layout_below="@+id/feeder_name_title"
-        android:layout_toEndOf="@+id/feeder_name_title"/>
+        android:layout_below="@+id/feeder_name_text_view"
+        android:layout_toEndOf="@+id/amount_title" />
 
     <ImageButton
         android:id="@+id/change_data_imageButton"
@@ -82,8 +82,8 @@
         android:textSize="@dimen/text_size_medium"
         android:inputType="textPersonName"
         android:padding="@dimen/margin_padding_size_small"
-        android:layout_below="@id/date_text_view"
-        android:layout_alignStart="@id/date_text_view"/>
+        android:layout_below="@+id/date_text_view"
+        android:layout_toEndOf="@+id/amount_title" />
 
 
 
