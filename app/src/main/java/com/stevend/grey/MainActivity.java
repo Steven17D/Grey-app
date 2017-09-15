@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                 final String amountString = ((EditText) dialog.findViewById(R.id.amount_editText)).getText().toString().replace("%", "").replace(" ", "");
                                 try {
                                     int amount = Integer.parseInt(amountString);
-                                    feedingEntry.setAmount(amount <= 100 ? 100 : amount);
+                                    feedingEntry.setAmount(amount <= 100 ? amount : 100);
                                 } finally {
                                     feedingEntryRef.setValue(feedingEntry);
                                 }
