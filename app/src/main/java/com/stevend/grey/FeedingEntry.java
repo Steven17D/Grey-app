@@ -42,8 +42,8 @@ public class FeedingEntry implements Cloneable{
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    protected FeedingEntry clone() throws CloneNotSupportedException {
+        return (FeedingEntry) super.clone();
     }
 }
 

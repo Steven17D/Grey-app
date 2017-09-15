@@ -12,6 +12,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -102,16 +103,22 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateEntryViewAdapter(Common.roundEpochToDay(System.currentTimeMillis()));
+    }
+
     private void initEntryListView() {
         entryList = (ListView) findViewById(R.id.entry_list);
-        updateEntryViewAdapter(Common.roundEpochToDay(System.currentTimeMillis()));
         updateMonthTitle(Calendar.getInstance().getTime());
         entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 final FeedingEntry feedingEntry;
+                final FeedingEntry originalFeedingEntry = (FeedingEntry) parent.getItemAtPosition(position);
                 try {
-                    feedingEntry = (FeedingEntry) ((FeedingEntry) parent.getItemAtPosition(position)).clone();
+                    feedingEntry = originalFeedingEntry.clone();
                 } catch (CloneNotSupportedException e) {
                     Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                     return false;
@@ -136,7 +143,13 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                feedingEntryRef.setValue(feedingEntry);
+                                final String amountString = ((EditText) dialog.findViewById(R.id.amount_editText)).getText().toString().replace("%", "").replace(" ", "");
+                                try {
+                                    int amount = Integer.parseInt(amountString);
+                                    feedingEntry.setAmount(amount <= 100 ? 100 : amount);
+                                } finally {
+                                    feedingEntryRef.setValue(feedingEntry);
+                                }
                             }
                         })
                         .show();
@@ -154,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 });
 
                 final TextView dateTextView = (TextView) dialogView.findViewById(R.id.date_text_view);
-                String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
+                String dateString = new java.text.SimpleDateFormat("EEEE, d MMMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
                 dateTextView.setText(dateString);
 
                 ImageButton dateImageButton = (ImageButton) dialogView.findViewById(R.id.change_data_imageButton);
@@ -172,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                                         calendar.set(year, month, dayOfMonth, hourOfDay, minute);
                                         feedingEntry.setTime(calendar.getTimeInMillis());
-                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
+                                        String dateString = new java.text.SimpleDateFormat("EEEE, d MMMM\nHH:mm", Locale.getDefault()).format(new Date(feedingEntry.getTime()));
                                         dateTextView.setText(dateString);
                                     }
                                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
@@ -186,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
 
                 EditText amountEditText = (EditText) dialogView.findViewById(R.id.amount_editText);
-                amountEditText.setText(String.format("%s %c", feedingEntry.getAmount(), '%'));
+                amountEditText.setText(String.format("%s %%", feedingEntry.getAmount()));
 
                 return false;
             }
@@ -296,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         feedingEntryFirebaseListAdapter =
                 new FirebaseListAdapter<FeedingEntry>(this, FeedingEntry.class, R.layout.feeding_entry, feedingsQuery) {
                     @Override
-                    protected void populateView(View v, FeedingEntry model, int position) {
+                    protected void populateView(View v, final FeedingEntry model, int position) {
                         final ImageView feederImage = (ImageView) v.findViewById(R.id.feeder_image);
                         Glide.with(MainActivity.this)
                                 .load(model.getFeeder().getPhotoUrl())
@@ -312,6 +325,16 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                                 });
                         ((TextView)v.findViewById(R.id.feeder_name)).setText(model.getFeeder().getName());
                         ((TextView)v.findViewById(R.id.time)).setText(new java.text.SimpleDateFormat("EEEE, d MMMM HH:mm", Locale.getDefault()).format(new java.util.Date(model.getTime())));
+                        ((TextView)v.findViewById(R.id.amount_text)).setText(String.format(Locale.getDefault(), "%d%%", model.getAmount()));
+
+                        final WaveView cupLevelWaveView = (WaveView) v.findViewById(R.id.cup_level);
+                        v.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                            @Override
+                            public boolean onPreDraw() {
+                                cupLevelWaveView.setProgress(model.getAmount());
+                                return true;
+                            }
+                        });
                     }
                 };
         entryList.setAdapter(feedingEntryFirebaseListAdapter);

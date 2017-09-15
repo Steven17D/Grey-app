@@ -12,7 +12,7 @@
     <string name="cancel">Cancel</string>
     <string name="name_for_preview">Steven Dashevsky</string>
     <string name="date_for_preview">Monday, 11 September 19:14</string>
-    <string name="feeder_name_title">Feeder name:</string>
+    <string name="feeder_name_title">Feeder:</string>
     <string name="amount_title">Amount:</string>
     <string name="amount_for_preview">75 %</string>
     <string name="time_title">Time:</string>
@@ -25,4 +25,5 @@
     <string name="date_multiline_for_preview">Monday, 11 September\\n19:14</string>
     <string name="date_editing_button">date editing button</string>
     <string name="month_for_preview">September</string>
+    <string name="item_click_massage">Long click to edit entry</string>
 </resources>
