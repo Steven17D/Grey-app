@@ -26,4 +26,5 @@
     <string name="date_editing_button">date editing button</string>
     <string name="month_for_preview">September</string>
     <string name="item_click_massage">Long click to edit entry</string>
+    <string name="edit_other_error_message">You are not allowed to edit entry that was not made by you.</string>
 </resources>

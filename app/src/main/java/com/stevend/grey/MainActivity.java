@@ -119,8 +119,12 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         entryList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                final FeedingEntry feedingEntry;
                 final FeedingEntry originalFeedingEntry = (FeedingEntry) parent.getItemAtPosition(position);
+                if (!originalFeedingEntry.getFeeder().equals(new Feeder(FirebaseAuth.getInstance().getCurrentUser()))){
+                    Toast.makeText(MainActivity.this, R.string.edit_other_error_message, Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                final FeedingEntry feedingEntry;
                 try {
                     feedingEntry = originalFeedingEntry.clone();
                 } catch (CloneNotSupportedException e) {

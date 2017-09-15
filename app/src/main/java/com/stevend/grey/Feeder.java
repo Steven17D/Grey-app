@@ -2,6 +2,8 @@ package com.stevend.grey;
 
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Objects;
+
 public class Feeder implements Cloneable{
     private String name;
     private String email;
@@ -32,6 +34,14 @@ public class Feeder implements Cloneable{
     }
 
     public Feeder() {}
+
+    @Override
+    public boolean equals(Object obj) {
+        Feeder other = (Feeder) obj;
+        return Objects.equals(this.name, other.name) &&
+                Objects.equals(this.email, other.email) &&
+                Objects.equals(this.photoUrl, other.photoUrl);
+    }
 
     public Feeder(String name, String email, String photoUrl) {
         this.name = name;
