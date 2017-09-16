@@ -7,9 +7,10 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/calendar_layout"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:paddingTop="@dimen/margin_padding_size_medium"
         android:paddingEnd="?listPreferredItemPaddingRight"
         android:paddingStart="?listPreferredItemPaddingLeft">
@@ -52,12 +53,13 @@
             android:layout_width="match_parent"
             android:layout_height="222dp"/>
 
+    </LinearLayout>
         <ListView
             android:id="@+id/entry_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:listitem="@layout/feeding_entry"/>
-    </LinearLayout>
+            tools:listitem="@layout/feeding_entry"
+            android:layout_below="@id/calendar_layout"/>
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/material_design_android_floating_action_menu"

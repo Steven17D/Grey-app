@@ -7,11 +7,13 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
@@ -96,6 +98,20 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
 
         monthName = (TextView) findViewById(R.id.month_name);
         monthCalendar = (MonthCalendar) findViewById(R.id.calendar);
+        monthCalendar.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                ViewGroup viewGroup = (ViewGroup) monthCalendar.findViewById(R.id.month_header);
+                for (int i = 0; i < viewGroup.getChildCount(); i++){
+                    if (((TextView) viewGroup.getChildAt(i)).getCurrentTextColor() == ContextCompat.getColor(MainActivity.this, R.color.material_light_secondary_text_color)) {
+                        monthCalendar.getViewTreeObserver().removeOnPreDrawListener(this);
+                    }
+                    ((TextView) viewGroup.getChildAt(i)).setTextColor(ContextCompat.getColor(MainActivity.this, R.color.material_light_secondary_text_color));
+                }
+                return true;
+            }
+        });
+
         monthCalendar.setOnDayChangeListener(this);
         monthCalendar.setOnMonthChangeListener(this);
         monthCalendar.prepareCalendar(builder.build());
