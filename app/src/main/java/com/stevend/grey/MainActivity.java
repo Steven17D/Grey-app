@@ -38,14 +38,18 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.john.waveview.WaveView;
 import com.roger.catloadinglibrary.CatLoadingView;
 
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
 
+import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -93,8 +97,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         }
 
         MonthCalendarConfiguration.Builder builder = new MonthCalendarConfiguration.Builder();
-        builder.setFirstDayOfWeek(Calendar.SUNDAY);
-        builder.setDisplayDaysOutOfMonth(false);
+        builder.setDisplayDaysOutOfMonth(true);
 
         monthName = (TextView) findViewById(R.id.month_name);
         monthCalendar = (MonthCalendar) findViewById(R.id.calendar);
@@ -233,6 +236,16 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private void initFloatingActionMenu() {
         materialDesignFAM = (FloatingActionMenu) findViewById(R.id.material_design_android_floating_action_menu);
         FloatingActionButton entryButton = (FloatingActionButton) findViewById(R.id.action_menu_add_entry);
+        if (isRTL()) {
+            Field mLabelsPosition;
+            try {
+                mLabelsPosition = materialDesignFAM.getClass().getDeclaredField("mLabelsPosition");
+                mLabelsPosition.setAccessible(true);
+                mLabelsPosition.set(materialDesignFAM, 1);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG);
+            }
+        }
         entryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -321,10 +334,11 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     }
 
     private void changeMonth(boolean isLeft) {
-        currentDay.add(Calendar.MONTH, isLeft? -1 : 1);
+        currentDay.roll(Calendar.MONTH, !isLeft);
         updateMonthTitle(currentDay.getTime());
-        updateEntryViewAdapter(Common.roundEpochToDay(currentDay.getTimeInMillis()));
         monthCalendar.setSelectedDay(currentDay, true);
+        currentDay.roll(Calendar.MONTH, isLeft);
+        monthCalendar.setSelectedDay(currentDay, false);
     }
 
     private void updateEntryViewAdapter(long selectedData) {
@@ -362,13 +376,30 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                         });
                     }
                 };
+        feedingsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getChildrenCount() == 0) {
+                    catLoadingView.dismiss();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
         entryList.setAdapter(feedingEntryFirebaseListAdapter);
     }
 
     @Override
     public void onDayChanged(Calendar calendar) {
-        updateEntryViewAdapter(Common.roundEpochToDay(calendar.getTimeInMillis()));
-        currentDay = calendar;
+        if (calendar.getTimeInMillis() <= Calendar.getInstance().getTimeInMillis()){
+            updateEntryViewAdapter(Common.roundEpochToDay(calendar.getTimeInMillis()));
+            currentDay = calendar;
+        } else {
+            monthCalendar.setSelectedDay(currentDay, false);
+        }
     }
 
     @Override
@@ -386,5 +417,11 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     public void onDestroy() {
         super.onDestroy();
         monthCalendar.releaseCalendar();
+    }
+
+    public static boolean isRTL() {
+        final int directionality = Character.getDirectionality(Locale.getDefault().getDisplayName().charAt(0));
+        return directionality == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+                directionality == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
     }
 }
