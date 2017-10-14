@@ -253,12 +253,12 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (currentUser == null) return;
                 MaterialDialog dialog = new MaterialDialog.Builder(MainActivity.this)
-                        .title("Add entry")
+                        .title(R.string.add_entry)
                         .customView(R.layout.add_entry_dialog, false)
                         .cancelable(true)
                         .canceledOnTouchOutside(true)
-                        .negativeText("Cancel")
-                        .positiveText("OK")
+                        .negativeText(R.string.cancel)
+                        .positiveText(R.string.ok)
                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                             @Override
                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {

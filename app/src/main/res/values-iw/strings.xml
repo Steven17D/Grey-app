@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grey</string>
+    <string name="time_title">זמן:</string>
+    <string name="save">שמור</string>
+    <string name="time_picker_title">בחר זמן</string>
+    <string name="successful_deletion_message">רשומה נמחקה בהצלחה</string>
+    <string name="ok">אוקיי</string>
+    <string name="loading">טוען</string>
+    <string name="item_click_massage">לחיצה ארוכה לעריכת רשומה</string>
+    <string name="feeder_name_title">מאכיל:</string>
+    <string name="edit_other_error_message">אתה לא רשאי לערוך רשומה זו.</string>
+    <string name="edit_entry_title">אפשרויות עריכה</string>
+    <string name="disabled_feeder_edit">אי אפשר לשנות שדה זה</string>
+    <string name="delete">מחק</string>
+    <string name="date_picker_title">בחר זמן</string>
+    <string name="cancel">בטל</string>
+    <string name="amount_title">כמות:</string>
+    <string name="add_entry">הוסף רשומה</string>
+    <string name="action_signout">צא</string>
+    <string name="action_settings">הגדרות</string>
+</resources>

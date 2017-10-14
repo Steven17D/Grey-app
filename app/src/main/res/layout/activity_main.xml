@@ -99,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/fab_add"
-            fab:fab_label="Add entry"
+            fab:fab_label="@string/add_entry"
             fab:fab_size="mini" />
 
         <com.github.clans.fab.FloatingActionButton
@@ -107,7 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_power_settings_new_white_24dp"
-            fab:fab_label="Log out"
+            fab:fab_label="@string/action_signout"
             fab:fab_size="mini" />
     </com.github.clans.fab.FloatingActionMenu>
 
