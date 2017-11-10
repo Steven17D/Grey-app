@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Grey</string>
+    <string name="action_settings">настройки</string>
+    <string name="loading">загрузка</string>
+    <string name="action_signout">выход</string>
+    <string name="add_entry">Добавить запись</string>
+    <string name="delete">Удалить</string>
+    <string name="save">"Сохранить "</string>
+    <string name="cancel">Отмена</string>
+    <string name="feeder_name_title">питатель:</string>
+    <string name="amount_title">Количество:</string>
+    <string name="time_title">Время:</string>
+    <string name="disabled_feeder_edit">Вы не можете изменить имя питателя</string>
+    <string name="date_picker_title">Выберите дату</string>
+    <string name="ok">ОК</string>
+    <string name="successful_deletion_message">Запись удалена успешно</string>
+    <string name="time_picker_title">Выберите время</string>
+    <string name="item_click_massage">Длинный клик для редактирования записи</string>
+    <string name="edit_other_error_message">Вы не можете редактировать запись, которая не была сделана вами.</string>
+    <string name="edit_entry_title">Изменить параметры</string>
+</resources>
