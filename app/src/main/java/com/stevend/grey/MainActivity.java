@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
                 mLabelsPosition.setAccessible(true);
                 mLabelsPosition.set(materialDesignFAM, 1);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG);
+                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }
         entryButton.setOnClickListener(new View.OnClickListener() {
