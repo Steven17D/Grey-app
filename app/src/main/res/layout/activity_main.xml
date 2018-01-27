@@ -20,15 +20,6 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_marginBottom="@dimen/margin_padding_size_small">
-            <ImageButton
-                android:id="@+id/left_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_chevron_left_gray_24dp"
-                android:background="@android:color/transparent"
-                tools:ignore="ContentDescription,RtlHardcoded"/>
             <TextView
                 android:id="@+id/month_name"
                 android:layout_width="wrap_content"
@@ -37,15 +28,6 @@
                 android:layout_centerInParent="true"
                 tools:text="@string/month_for_preview"
                 tools:ignore="RelativeOverlap"/>
-            <ImageButton
-                android:id="@+id/right_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                android:background="@android:color/transparent"
-                tools:ignore="ContentDescription,RtlHardcoded"/>
         </RelativeLayout>
 
         <io.github.memfis19.cadar.view.MonthCalendar

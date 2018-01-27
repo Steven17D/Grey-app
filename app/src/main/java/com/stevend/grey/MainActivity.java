@@ -83,21 +83,9 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     }
 
     private void initCalendar() {
-        class CalendarControllerOnClickListener implements View.OnClickListener {
-            private final boolean isLeft;
-
-            private CalendarControllerOnClickListener(boolean isLeft) {
-                this.isLeft = isLeft;
-            }
-
-            @Override
-            public void onClick(View v) {
-                changeMonth(isLeft);
-            }
-        }
-
         MonthCalendarConfiguration.Builder builder = new MonthCalendarConfiguration.Builder();
         builder.setDisplayDaysOutOfMonth(true);
+        builder.setFirstDayOfWeek(Calendar.SUNDAY);
 
         monthName = (TextView) findViewById(R.id.month_name);
         monthCalendar = (MonthCalendar) findViewById(R.id.calendar);
@@ -118,12 +106,6 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         monthCalendar.setOnDayChangeListener(this);
         monthCalendar.setOnMonthChangeListener(this);
         monthCalendar.prepareCalendar(builder.build());
-
-        ImageButton leftButton = (ImageButton) findViewById(R.id.left_button);
-        leftButton.setOnClickListener(new CalendarControllerOnClickListener(true));
-        ImageButton rightButton = (ImageButton) findViewById(R.id.right_button);
-        rightButton.setOnClickListener(new CalendarControllerOnClickListener(false));
-
     }
 
     @Override
@@ -333,14 +315,6 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
         });
     }
 
-    private void changeMonth(boolean isLeft) {
-        currentDay.roll(Calendar.MONTH, !isLeft);
-        updateMonthTitle(currentDay.getTime());
-        monthCalendar.setSelectedDay(currentDay, true);
-        currentDay.roll(Calendar.MONTH, isLeft);
-        monthCalendar.setSelectedDay(currentDay, false);
-    }
-
     private void updateEntryViewAdapter(long selectedData) {
         final long epochDay = 24 * 60 * 60 * 1000;
         Query feedingsQuery = FirebaseDatabase.getInstance().getReference("Cats").child("Grey").child("feedings").orderByChild("time").startAt(selectedData).endAt(selectedData + epochDay);
@@ -410,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements OnDayChangeListen
     private void updateMonthTitle(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        monthName.setText(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.UK));
+        monthName.setText(cal.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()));
     }
 
     @Override
